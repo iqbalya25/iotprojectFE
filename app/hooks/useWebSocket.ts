@@ -34,27 +34,47 @@ export const useWebSocket = () => {
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
-    // Use environment variable or fallback to production URL
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
-    console.log("Connecting to WebSocket at:", wsUrl);
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8081";
+    console.log("Attempting to connect to WebSocket at:", `${wsUrl}/ws`);
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${wsUrl}/ws`),
+      webSocketFactory: () => {
+        const socket = new SockJS(`${wsUrl}/ws`);
+        socket.onclose = (event) => {
+          console.log("WebSocket connection closed:", event);
+        };
+        socket.onerror = (error) => {
+          console.error("WebSocket connection error:", error);
+        };
+        return socket;
+      },
       debug: (str) => {
-        console.log(str);
+        console.log("WebSocket Debug:", str);
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
-      connectHeaders: {
-        // Add any necessary headers for Cloud Run
-        "X-Requested-With": "SockJS",
+      onConnect: () => {
+        console.log("Successfully connected to WebSocket");
+        setIsConnected(true);
+      },
+      onStompError: (frame) => {
+        console.error("STOMP protocol error:", frame);
+      },
+      onWebSocketError: (error) => {
+        console.error("WebSocket error:", error);
+        setIsConnected(false);
+      },
+      onDisconnect: () => {
+        console.log("Disconnected from WebSocket");
+        setIsConnected(false);
       },
     });
 
+    // Set up subscriptions when client connects
     client.onConnect = (frame) => {
-      setIsConnected(true);
       console.log("Connected to WebSocket:", frame);
+      setIsConnected(true);
 
       // Subscribe to device status
       client.subscribe("/topic/device/status", (message) => {
@@ -90,24 +110,17 @@ export const useWebSocket = () => {
       });
     };
 
-    client.onDisconnect = () => {
-      setIsConnected(false);
-      console.log("Disconnected from WebSocket");
-    };
-
-    client.onWebSocketError = (error) => {
-      console.error("WebSocket Error:", error);
-    };
-
-    client.onStompError = (frame) => {
-      console.error("STOMP Error:", frame);
-    };
-
-    client.activate();
-    clientRef.current = client;
+    try {
+      console.log("Activating WebSocket client...");
+      client.activate();
+      clientRef.current = client;
+    } catch (error) {
+      console.error("Error activating WebSocket client:", error);
+    }
 
     return () => {
       if (client.active) {
+        console.log("Deactivating WebSocket client...");
         client.deactivate();
       }
     };
@@ -116,7 +129,7 @@ export const useWebSocket = () => {
   const sendCommand = (command: Command) => {
     if (clientRef.current?.connected) {
       try {
-        console.log("Sending command via WebSocket:", command);
+        console.log("Attempting to send command:", command);
         clientRef.current.publish({
           destination: "/app/device/command",
           body: JSON.stringify(command),
@@ -127,12 +140,18 @@ export const useWebSocket = () => {
         console.log("Command sent successfully");
       } catch (error) {
         console.error("Error sending command:", error);
+        console.error("Error details:", {
+          error,
+          clientState: clientRef.current.connected,
+          command,
+        });
       }
     } else {
-      console.error(
-        "WebSocket not connected. Current state:",
-        clientRef.current
-      );
+      console.error("WebSocket not connected. Connection state:", {
+        client: clientRef.current,
+        connected: clientRef.current?.connected,
+        active: clientRef.current?.active,
+      });
     }
   };
 
