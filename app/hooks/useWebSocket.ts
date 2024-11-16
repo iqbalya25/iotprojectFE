@@ -34,18 +34,31 @@ export const useWebSocket = () => {
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
+    // Get the base URL from environment variable
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8081";
-    console.log("Attempting to connect to WebSocket at:", `${wsUrl}/ws`);
+
+    // Make sure it's using HTTP/HTTPS
+    const wsBaseUrl = wsUrl
+      .replace("ws://", "http://")
+      .replace("wss://", "https://");
+
+    console.log("Attempting to connect to WebSocket at:", `${wsBaseUrl}/ws`);
 
     const client = new Client({
       webSocketFactory: () => {
-        const socket = new SockJS(`${wsUrl}/ws`);
+        // Create SockJS connection using HTTP/HTTPS URL
+        const socket = new SockJS(`${wsBaseUrl}`);
+
         socket.onclose = (event) => {
           console.log("WebSocket connection closed:", event);
+          setIsConnected(false);
         };
+
         socket.onerror = (error) => {
           console.error("WebSocket connection error:", error);
+          setIsConnected(false);
         };
+
         return socket;
       },
       debug: (str) => {
@@ -60,6 +73,7 @@ export const useWebSocket = () => {
       },
       onStompError: (frame) => {
         console.error("STOMP protocol error:", frame);
+        setIsConnected(false);
       },
       onWebSocketError: (error) => {
         console.error("WebSocket error:", error);

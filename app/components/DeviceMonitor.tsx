@@ -39,19 +39,14 @@ const DeviceMonitor = () => {
   useEffect(() => {
     const fetchMasters = async () => {
       try {
-        // Use environment variable or fallback to production URL
         const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        console.log('Fetching masters from:', `${apiUrl}/api/masters`);
         
         const response = await fetch(`${apiUrl}/api/masters`);
         if (response.ok) {
           const data = await response.json();
-          console.log('Masters data received:', data);
           setMasters(data);
         } else {
-          console.error('Failed to fetch masters:', response.status, response.statusText);
           const text = await response.text();
-          console.error('Error response:', text);
         }
       } catch (error) {
         console.error('Error fetching masters:', error);
