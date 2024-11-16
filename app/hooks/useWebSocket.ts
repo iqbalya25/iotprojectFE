@@ -1,4 +1,3 @@
-// hooks/useWebSocket.ts
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
@@ -35,14 +34,22 @@ export const useWebSocket = () => {
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
+    // Use environment variable or fallback to production URL
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+    console.log("Connecting to WebSocket at:", wsUrl);
+
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8081/ws"),
+      webSocketFactory: () => new SockJS(`${wsUrl}/ws`),
       debug: (str) => {
         console.log(str);
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
+      connectHeaders: {
+        // Add any necessary headers for Cloud Run
+        "X-Requested-With": "SockJS",
+      },
     });
 
     client.onConnect = (frame) => {
@@ -88,6 +95,14 @@ export const useWebSocket = () => {
       console.log("Disconnected from WebSocket");
     };
 
+    client.onWebSocketError = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+
+    client.onStompError = (frame) => {
+      console.error("STOMP Error:", frame);
+    };
+
     client.activate();
     clientRef.current = client;
 
@@ -105,7 +120,9 @@ export const useWebSocket = () => {
         clientRef.current.publish({
           destination: "/app/device/command",
           body: JSON.stringify(command),
-          headers: {},
+          headers: {
+            "content-type": "application/json",
+          },
         });
         console.log("Command sent successfully");
       } catch (error) {
@@ -118,6 +135,7 @@ export const useWebSocket = () => {
       );
     }
   };
+
   return {
     deviceStatus,
     connectionStatus,
