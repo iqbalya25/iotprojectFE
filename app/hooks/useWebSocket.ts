@@ -129,28 +129,32 @@ export const useWebSocket = () => {
   const sendCommand = (command: Command) => {
     if (clientRef.current?.connected) {
       try {
-        console.log("Attempting to send command:", command);
+        console.log("Sending command:", command);
+
+        // Stringify the command object
+        const payload = JSON.stringify(command);
+        console.log("Stringified payload:", payload);
+
         clientRef.current.publish({
           destination: "/app/device/command",
-          body: JSON.stringify(command),
+          body: payload,
           headers: {
             "content-type": "application/json",
           },
         });
+
         console.log("Command sent successfully");
       } catch (error) {
-        console.error("Error sending command:", error);
-        console.error("Error details:", {
+        console.error("Error sending command:", {
           error,
-          clientState: clientRef.current.connected,
           command,
+          connectionState: clientRef.current.connected,
         });
       }
     } else {
-      console.error("WebSocket not connected. Connection state:", {
+      console.error("WebSocket not connected", {
+        connectionState: clientRef.current?.connected,
         client: clientRef.current,
-        connected: clientRef.current?.connected,
-        active: clientRef.current?.active,
       });
     }
   };
