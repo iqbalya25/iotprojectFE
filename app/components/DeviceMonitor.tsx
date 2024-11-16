@@ -1,31 +1,80 @@
 // components/DeviceMonitor.tsx
-'use client'
-import { useWebSocket } from '../hooks/useWebSocket';
+"use client";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ThermometerIcon, FanIcon, PowerIcon, WifiIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
+
+interface Master {
+  id: number;
+  masterName: string;
+  masterIpAddress: string;
+  masterPort: number;
+  plcId: number;
+  masterLocation: string;
+}
 
 const DeviceMonitor = () => {
-  const { 
-    deviceStatus, 
-    connectionStatus, 
-    temperature, 
+  const {
+    deviceStatus,
+    connectionStatus,
+    temperature,
     isConnected,
-    sendCommand 
+    sendCommand,
   } = useWebSocket();
 
+  const [masters, setMasters] = useState<Master[]>([]);
+  const [selectedMasterId, setSelectedMasterId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchMasters = async () => {
+      try {
+        const response = await fetch("http://localhost:8081/api/masters");
+        if (response.ok) {
+          const data = await response.json();
+          setMasters(data);
+        }
+      } catch (error) {
+        console.error("Error fetching masters:", error);
+      }
+    };
+
+    fetchMasters();
+  }, []);
+
   const handleConnect = () => {
-    sendCommand({
-      action: 'CONNECT_MASTER',
-      ipAddress: '192.168.1.100' // Replace with your PLC IP
-    });
+    if (connectionStatus?.status === "Connected") {
+      // If already connected, send disconnect command
+      sendCommand({
+        action: "DISCONNECT_MASTER",
+      });
+    } else {
+      // If disconnected, send connect command with selected PLC
+      const selectedMaster = masters.find(
+        (m) => m.id.toString() === selectedMasterId
+      );
+      if (selectedMaster) {
+        sendCommand({
+          action: "CONNECT_MASTER",
+          ipAddress: selectedMaster.masterIpAddress,
+        });
+      }
+    }
   };
 
-  const handleBlowerControl = (action: 'ON' | 'OFF') => {
+  const handleBlowerControl = (action: "ON" | "OFF") => {
     sendCommand({
-      action: action === 'ON' ? 'TURN_ON_BLOWER' : 'TURN_OFF_BLOWER'
+      action: action === "ON" ? "TURN_ON_BLOWER" : "TURN_OFF_BLOWER",
     });
   };
 
@@ -34,16 +83,18 @@ const DeviceMonitor = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Industrial IoT Dashboard</h1>
-        <Alert 
-          className={`w-fit ${isConnected ? 'bg-green-50' : 'bg-red-50'}`}
-        >
-          <WifiIcon className={`h-4 w-4 ${isConnected ? 'text-green-600' : 'text-red-600'}`} />
+        <Alert className={`w-fit ${isConnected ? "bg-green-50" : "bg-red-50"}`}>
+          <WifiIcon
+            className={`h-4 w-4 ${
+              isConnected ? "text-green-600" : "text-red-600"
+            }`}
+          />
           <AlertDescription>
-            {isConnected ? 'Connected' : 'Disconnected'}
+            {isConnected ? "Connected" : "Disconnected"}
           </AlertDescription>
         </Alert>
       </div>
-      
+
       <Separator />
 
       {/* Main Grid */}
@@ -60,18 +111,44 @@ const DeviceMonitor = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-2xl font-bold">
-                  {connectionStatus?.status || 'Unknown'}
+                  {connectionStatus?.status || "Unknown"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Master ID: {connectionStatus?.masterId || 'N/A'}
+                  Master ID: {connectionStatus?.masterId || "N/A"}
                 </p>
               </div>
-              <Button 
+              <Select
+                value={selectedMasterId}
+                onValueChange={setSelectedMasterId}
+              >
+                <SelectTrigger className="w-full mb-3">
+                  <SelectValue placeholder="Select PLC Master" />
+                </SelectTrigger>
+                <SelectContent>
+                  {masters.map((master) => (
+                    <SelectItem key={master.id} value={master.id.toString()}>
+                      {master.masterName} - {master.masterIpAddress}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
                 onClick={handleConnect}
                 className="w-full"
-                variant={connectionStatus?.status === 'Connected' ? 'outline' : 'default'}
+                variant={
+                  connectionStatus?.status === "Connected"
+                    ? "outline"
+                    : "default"
+                }
+                disabled={
+                  connectionStatus?.status === "Connected"
+                    ? false
+                    : !selectedMasterId
+                }
               >
-                {connectionStatus?.status === 'Connected' ? 'Disconnect' : 'Connect to PLC'}
+                {connectionStatus?.status === "Connected"
+                  ? "Disconnect from PLC"
+                  : "Connect to PLC"}
               </Button>
             </div>
           </CardContent>
@@ -88,11 +165,13 @@ const DeviceMonitor = () => {
           <CardContent>
             <div className="space-y-2">
               <p className="text-3xl font-bold">
-                {temperature?.value ? `${temperature.value}°C` : 'N/A'}
+                {temperature?.value ? `${temperature.value}°C` : "N/A"}
               </p>
               <p className="text-xs text-muted-foreground">
-                Last Updated: {temperature?.timestamp ? 
-                  new Date(temperature.timestamp).toLocaleString() : 'Never'}
+                Last Updated:{" "}
+                {temperature?.timestamp
+                  ? new Date(temperature.timestamp).toLocaleString()
+                  : "Never"}
               </p>
             </div>
           </CardContent>
@@ -110,26 +189,26 @@ const DeviceMonitor = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-2xl font-bold">
-                  {deviceStatus?.status || 'Unknown'}
+                  {deviceStatus?.status || "Unknown"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Device ID: {deviceStatus?.deviceId || 'N/A'}
+                  Device ID: {deviceStatus?.deviceId || "N/A"}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  onClick={() => handleBlowerControl('ON')}
+                <Button
+                  onClick={() => handleBlowerControl("ON")}
                   variant="default"
                   className="w-full"
-                  disabled={deviceStatus?.status === 'ON'}
+                  disabled={deviceStatus?.status === "ON"}
                 >
                   Turn On
                 </Button>
-                <Button 
-                  onClick={() => handleBlowerControl('OFF')}
+                <Button
+                  onClick={() => handleBlowerControl("OFF")}
                   variant="outline"
                   className="w-full"
-                  disabled={deviceStatus?.status === 'OFF'}
+                  disabled={deviceStatus?.status === "OFF"}
                 >
                   Turn Off
                 </Button>
