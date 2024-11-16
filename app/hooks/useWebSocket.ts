@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -27,15 +27,16 @@ interface Command {
 
 export const useWebSocket = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus | null>(null);
   const [temperature, setTemperature] = useState<Temperature | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
     // Use environment variable or fallback to production URL
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'https://iot-project-cloud-569244639422.asia-southeast1.run.app';
-    console.log('Connecting to WebSocket at:', wsUrl);
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+    console.log("Connecting to WebSocket at:", wsUrl);
 
     const client = new Client({
       webSocketFactory: () => new SockJS(`${wsUrl}/ws`),
@@ -47,8 +48,8 @@ export const useWebSocket = () => {
       heartbeatOutgoing: 4000,
       connectHeaders: {
         // Add any necessary headers for Cloud Run
-        'X-Requested-With': 'SockJS'
-      }
+        "X-Requested-With": "SockJS",
+      },
     });
 
     client.onConnect = (frame) => {
@@ -120,7 +121,7 @@ export const useWebSocket = () => {
           destination: "/app/device/command",
           body: JSON.stringify(command),
           headers: {
-            'content-type': 'application/json'
+            "content-type": "application/json",
           },
         });
         console.log("Command sent successfully");
