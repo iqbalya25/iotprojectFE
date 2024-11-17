@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { BlowerParameters } from "../types/types";
 
 interface DeviceStatus {
   deviceId: string;
@@ -31,6 +32,7 @@ export const useWebSocket = () => {
     useState<ConnectionStatus | null>(null);
   const [temperature, setTemperature] = useState<Temperature | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [blowerParameters, setBlowerParameters] = useState<BlowerParameters | null>(null);
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
@@ -102,6 +104,16 @@ export const useWebSocket = () => {
               console.error("Error parsing temperature:", err);
             }
           });
+
+          clientRef.current.subscribe("/topic/blower/parameters", (message) => {
+            try {
+              const parameters = JSON.parse(message.body);
+              console.log("Received blower parameters:", parameters);
+              setBlowerParameters(parameters);
+            } catch (err) {
+              console.error("Error parsing blower parameters:", err);
+            }
+          });
         }
       },
       onStompError: (frame) => {
@@ -164,11 +176,35 @@ export const useWebSocket = () => {
     }
   };
 
+  const sendFrequencyCommand = (frequency: number) => {
+    if (!clientRef.current?.connected) {
+      console.error("WebSocket not connected");
+      return;
+    }
+
+    try {
+      const command = {
+        frequency: frequency
+      };
+      
+      clientRef.current.publish({
+        destination: "/app/blower/frequency",
+        body: JSON.stringify(command),
+      });
+      
+      console.log("Frequency command sent:", frequency);
+    } catch (error) {
+      console.error("Error sending frequency command:", error);
+    }
+  };
+
   return {
     deviceStatus,
     connectionStatus,
     temperature,
     isConnected,
     sendCommand,
+    blowerParameters,
+    sendFrequencyCommand,
   };
 };

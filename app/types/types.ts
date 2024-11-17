@@ -34,3 +34,12 @@ export interface Master {
     title: string;
     type: 'realtime' | 'historical';
   }
+
+  export interface BlowerParameters {
+    frequency: number;
+    ampere: number;
+    voltage: number;
+    timestamp: string;
+    deviceId: string;
+    masterId: number;
+  }

@@ -1,3 +1,5 @@
+// Update in components/DeviceMonitor.tsx
+
 import { useState, useEffect } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { Master } from "../types/types";
@@ -5,15 +7,19 @@ import HeaderCard from "./header";
 import ConnectionCard from "./connectionCard";
 import TemperatureCard from "./temperatureCard";
 import BlowerCard from "./blowerCard";
+
 import TemperatureGraphs from "./temperatureGraph";
+import BlowerParametersCard from "./blowerParameterCard";
 
 const DeviceMonitor = () => {
   const {
     deviceStatus,
     connectionStatus,
     temperature,
+    blowerParameters,
     isConnected,
     sendCommand,
+    sendFrequencyCommand,
   } = useWebSocket();
   const [masters, setMasters] = useState<Master[]>([]);
   const [selectedMasterId, setSelectedMasterId] = useState<string>("");
@@ -59,12 +65,16 @@ const DeviceMonitor = () => {
     });
   };
 
+  const handleFrequencySet = (frequency: number) => {
+    sendFrequencyCommand(frequency);
+  };
+
   return (
     <div className="min-h-screen">
       <HeaderCard isConnected={isConnected} />
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6">
-        {/* Connection Status - Full Width Sticky */}
+        {/* Connection Status */}
         <div className="sticky top-0 z-10 bg-gray-50 pt-2 pb-4">
           <ConnectionCard
             connectionStatus={connectionStatus}
@@ -81,10 +91,14 @@ const DeviceMonitor = () => {
           <BlowerCard
             deviceStatus={deviceStatus}
             onBlowerControl={handleBlowerControl}
+            onFrequencySet={handleFrequencySet}
           />
         </div>
 
-        {/* Temperature Graphs - Full Width */}
+        {/* Blower Parameters Card */}
+        <BlowerParametersCard parameters={blowerParameters} />
+
+        {/* Temperature Graphs */}
         <div className="w-full">
           <TemperatureGraphs realtimeData={temperature} />
         </div>
