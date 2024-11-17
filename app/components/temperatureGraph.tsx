@@ -85,5 +85,6 @@ const TemperatureGraphs = ({ realtimeData }: TemperatureGraphsProps) => {
     </div>
   );
 };
+//
 
 export default TemperatureGraphs;
