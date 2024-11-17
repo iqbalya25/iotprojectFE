@@ -27,7 +27,8 @@ interface Command {
 
 export const useWebSocket = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus | null>(null);
   const [temperature, setTemperature] = useState<Temperature | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
@@ -42,7 +43,7 @@ export const useWebSocket = () => {
         // Add /ws to the URL
         const sockjsUrl = `${wsUrl}/ws`;
         console.log("Attempting to connect to:", sockjsUrl);
-        
+
         const socket = new SockJS(sockjsUrl);
 
         socket.onclose = (event) => {
