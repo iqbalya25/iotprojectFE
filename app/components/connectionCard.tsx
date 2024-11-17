@@ -26,25 +26,25 @@ const ConnectionCard = ({
   onConnect,
 }: ConnectionCardProps) => {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">
-          PLC Connection Status
-        </CardTitle>
-        <PowerIcon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div>
-            <p className="text-2xl font-bold">
-              {connectionStatus?.status || "Unknown"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Master ID: {connectionStatus?.masterId || "N/A"}
-            </p>
-          </div>
+    <div className="bg-white rounded-lg shadow-lg p-4">
+      <div className="grid md:grid-cols-4 gap-4 items-center">
+        {/* Status Section */}
+        <div className="md:col-span-1">
+          <h3 className="text-sm font-medium text-gray-700">
+            PLC Connection Status
+          </h3>
+          <p className="text-lg font-bold mt-1">
+            {connectionStatus?.status || "Unknown"}
+          </p>
+          <p className="text-xs text-gray-500">
+            Master ID: {connectionStatus?.masterId || "N/A"}
+          </p>
+        </div>
+
+        {/* Master Selection */}
+        <div className="md:col-span-2">
           <Select value={selectedMasterId} onValueChange={onMasterSelect}>
-            <SelectTrigger className="w-full mb-3">
+            <SelectTrigger>
               <SelectValue placeholder="Select PLC Master" />
             </SelectTrigger>
             <SelectContent>
@@ -55,6 +55,10 @@ const ConnectionCard = ({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Connect/Disconnect Button */}
+        <div className="md:col-span-1">
           <Button
             onClick={onConnect}
             className="w-full"
@@ -68,12 +72,12 @@ const ConnectionCard = ({
             }
           >
             {connectionStatus?.status === "Connected"
-              ? "Disconnect from PLC"
-              : "Connect to PLC"}
+              ? "Disconnect"
+              : "Connect"}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

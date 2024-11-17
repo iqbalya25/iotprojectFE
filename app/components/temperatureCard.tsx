@@ -6,18 +6,24 @@ interface TemperatureCardProps {
   temperature: Temperature | null;
 }
 
-const TemperatureCard = ({ temperature }: TemperatureCardProps) => {
+const TemperatureCard = ({
+  temperature,
+}: {
+  temperature: Temperature | null;
+}) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">
-          Temperature Sensor
-        </CardTitle>
-        <ThermometerIcon className="h-4 w-4 text-muted-foreground" />
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-sm font-medium">
+            Temperature Sensor
+          </CardTitle>
+          <ThermometerIcon className="h-4 w-4 text-muted-foreground" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <p className="text-3xl font-bold">
+        <div className="space-y-1">
+          <p className="text-2xl font-bold">
             {temperature?.value ? `${temperature.value}°C` : "N/A"}
           </p>
           <p className="text-xs text-muted-foreground">

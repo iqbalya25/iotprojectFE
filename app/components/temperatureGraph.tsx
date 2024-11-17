@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -21,14 +20,16 @@ const TemperatureGraphs = ({ realtimeData }: TemperatureGraphsProps) => {
   const [historicalData, setHistoricalData] = useState<TemperatureData[]>([]);
   const [timeRange, setTimeRange] = useState("1h");
 
-  // Add new real-time data point when it arrives
+  // Keep only last 20 points for real-time data
   useEffect(() => {
     if (realtimeData) {
-      setRealtimeChartData((prev) => [...prev, realtimeData]);
+      setRealtimeChartData((prev) => {
+        const newData = [...prev, realtimeData];
+        return newData.slice(-20); // Keep only last 20 points
+      });
     }
   }, [realtimeData]);
 
-  // Fetch historical data based on selected time range
   useEffect(() => {
     const fetchHistoricalData = async () => {
       try {
@@ -49,17 +50,19 @@ const TemperatureGraphs = ({ realtimeData }: TemperatureGraphsProps) => {
   }, [timeRange]);
 
   return (
-    <div className="space-y-6">
-      {/* Real-time Graph */}
-      <TemperatureChart
-        data={realtimeChartData}
-        title="Real-time Temperature"
-        type="realtime"
-      />
+    <div className="flex flex-col space-y-6 w-full">
+      {/* Real-time Graph - Full Width */}
+      <div className="w-full">
+        <TemperatureChart
+          data={realtimeChartData}
+          title="Real-time Temperature"
+          type="realtime"
+        />
+      </div>
 
-      {/* Historical Graph */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
+      {/* Historical Graph Section - Full Width */}
+      <div className="w-full space-y-4">
+        <div className="flex justify-between items-center px-4">
           <h3 className="text-lg font-medium">Historical Data</h3>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-[180px]">

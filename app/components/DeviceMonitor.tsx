@@ -60,22 +60,34 @@ const DeviceMonitor = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50">
       <HeaderCard isConnected={isConnected} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ConnectionCard
-          connectionStatus={connectionStatus}
-          masters={masters}
-          selectedMasterId={selectedMasterId}
-          onMasterSelect={setSelectedMasterId}
-          onConnect={handleConnect}
-        />
-        <TemperatureCard temperature={temperature} />
-        <BlowerCard
-          deviceStatus={deviceStatus}
-          onBlowerControl={handleBlowerControl}
-        />
-        <TemperatureGraphs realtimeData={temperature} />
+
+      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6">
+        {/* Connection Status - Full Width Sticky */}
+        <div className="sticky top-0 z-10 bg-gray-50 pt-2 pb-4">
+          <ConnectionCard
+            connectionStatus={connectionStatus}
+            masters={masters}
+            selectedMasterId={selectedMasterId}
+            onMasterSelect={setSelectedMasterId}
+            onConnect={handleConnect}
+          />
+        </div>
+
+        {/* Device Controls Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TemperatureCard temperature={temperature} />
+          <BlowerCard
+            deviceStatus={deviceStatus}
+            onBlowerControl={handleBlowerControl}
+          />
+        </div>
+
+        {/* Temperature Graphs - Full Width */}
+        <div className="w-full">
+          <TemperatureGraphs realtimeData={temperature} />
+        </div>
       </div>
     </div>
   );
