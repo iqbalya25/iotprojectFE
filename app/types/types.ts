@@ -23,3 +23,14 @@ export interface Master {
     value: number;
     timestamp: string;
   }
+
+  export interface TemperatureData {
+    value: number;
+    timestamp: string;
+  }
+  
+  export interface TemperatureChartProps {
+    data: TemperatureData[];
+    title: string;
+    type: 'realtime' | 'historical';
+  }

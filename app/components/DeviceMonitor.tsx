@@ -5,6 +5,7 @@ import HeaderCard from "./header";
 import ConnectionCard from "./connectionCard";
 import TemperatureCard from "./temperatureCard";
 import BlowerCard from "./blowerCard";
+import TemperatureGraphs from "./temperatureGraph";
 
 const DeviceMonitor = () => {
   const {
@@ -74,6 +75,7 @@ const DeviceMonitor = () => {
           deviceStatus={deviceStatus}
           onBlowerControl={handleBlowerControl}
         />
+        <TemperatureGraphs realtimeData={temperature} />
       </div>
     </div>
   );
