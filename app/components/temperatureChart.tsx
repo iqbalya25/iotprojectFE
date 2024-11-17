@@ -53,9 +53,11 @@ const TemperatureChart = ({ data, title, type }: TemperatureChartProps) => {
   const { visiblePoints, scrollable } = calculateSettings();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    <Card className="border-2 border-[#91a6be] bg-white">
+      <CardHeader className="border-b border-[#91a6be]">
+        <CardTitle className="text-sm font-medium text-[#003448]">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`h-[300px] ${scrollable ? "overflow-x-auto" : ""}`}>
@@ -72,7 +74,7 @@ const TemperatureChart = ({ data, title, type }: TemperatureChartProps) => {
                 data={animatedData}
                 margin={{ top: 10, right: 30, left: 10, bottom: 40 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#91a6be" />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={formatXAxis}
@@ -82,6 +84,7 @@ const TemperatureChart = ({ data, title, type }: TemperatureChartProps) => {
                   fontSize={12}
                   interval={isMobile ? 0 : "preserveStart"}
                   minTickGap={20}
+                  stroke="#003448"
                 />
                 <YAxis
                   domain={["auto", "auto"]}
@@ -90,16 +93,22 @@ const TemperatureChart = ({ data, title, type }: TemperatureChartProps) => {
                     angle: -90,
                     position: "insideLeft",
                     fontSize: 12,
+                    fill: "#003448",
                   }}
+                  stroke="#003448"
                 />
                 <Tooltip
                   labelFormatter={(label) => new Date(label).toLocaleString()}
                   formatter={(value: number) => [`${value}°C`, "Temperature"]}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #91a6be",
+                  }}
                 />
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#8884d8"
+                  stroke="#003448"
                   strokeWidth={2}
                   dot={type === "historical"}
                   isAnimationActive={true}

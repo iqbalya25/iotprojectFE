@@ -1,5 +1,3 @@
-// Update in components/DeviceMonitor.tsx
-
 import { useState, useEffect } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { Master } from "../types/types";
@@ -70,12 +68,12 @@ const DeviceMonitor = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#f0f0f0]">
       <HeaderCard isConnected={isConnected} />
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Connection Status */}
-        <div className="sticky top-0 z-10 bg-gray-50 pt-2 pb-4">
+        <div className="sticky top-0 z-10 bg-[#f0f0f0] pt-2 pb-4">
           <ConnectionCard
             connectionStatus={connectionStatus}
             masters={masters}

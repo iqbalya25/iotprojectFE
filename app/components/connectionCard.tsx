@@ -1,6 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PowerIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -8,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { ConnectionStatus, Master } from "../types/types";
 
 interface ConnectionCardProps {
@@ -26,25 +24,29 @@ const ConnectionCard = ({
   onConnect,
 }: ConnectionCardProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4">
+    <div className="bg-white rounded-lg shadow-lg border-2 border-[#91a6be] p-4">
       <div className="grid md:grid-cols-4 gap-4 items-center">
-        {/* Status Section */}
         <div className="md:col-span-1">
-          <h3 className="text-sm font-medium text-gray-700">
+          <h3 className="text-sm font-medium text-[#003448]">
             PLC Connection Status
           </h3>
-          <p className="text-lg font-bold mt-1">
+          <p
+            className={`text-lg font-bold mt-1 ${
+              connectionStatus?.status === "Connected"
+                ? "text-[#003448]"
+                : "text-red-600"
+            }`}
+          >
             {connectionStatus?.status || "Unknown"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[#91a6be]">
             Master ID: {connectionStatus?.masterId || "N/A"}
           </p>
         </div>
 
-        {/* Master Selection */}
         <div className="md:col-span-2">
           <Select value={selectedMasterId} onValueChange={onMasterSelect}>
-            <SelectTrigger>
+            <SelectTrigger className="border-2 border-[#91a6be] bg-[#dee2ef]">
               <SelectValue placeholder="Select PLC Master" />
             </SelectTrigger>
             <SelectContent>
@@ -57,14 +59,14 @@ const ConnectionCard = ({
           </Select>
         </div>
 
-        {/* Connect/Disconnect Button */}
         <div className="md:col-span-1">
           <Button
             onClick={onConnect}
-            className="w-full"
-            variant={
-              connectionStatus?.status === "Connected" ? "outline" : "default"
-            }
+            className={`w-full ${
+              connectionStatus?.status === "Connected"
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-[#003448] hover:bg-[#003448]/90"
+            } text-white border-none`}
             disabled={
               connectionStatus?.status === "Connected"
                 ? false
