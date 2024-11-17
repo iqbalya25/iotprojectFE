@@ -1,5 +1,3 @@
-// components/blowerParametersCard.tsx
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BlowerParameters } from "../types/types";
 import { Activity } from "lucide-react";
@@ -20,20 +18,24 @@ const BlowerParametersCard = ({ parameters }: BlowerParametersCardProps) => {
         <Activity className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Frequency</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm font-medium text-muted-foreground">
+              Frequency
+            </p>
             <p className="text-2xl font-bold">
-              {parameters ? `${formatFrequency(parameters.frequency)} Hz` : "N/A"}
+              {parameters
+                ? `${formatFrequency(parameters.frequency)} Hz`
+                : "N/A"}
             </p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-muted-foreground">Current</p>
             <p className="text-2xl font-bold">
               {parameters ? `${formatAmpere(parameters.ampere)} A` : "N/A"}
             </p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-muted-foreground">Voltage</p>
             <p className="text-2xl font-bold">
               {parameters ? `${formatVoltage(parameters.voltage)} V` : "N/A"}

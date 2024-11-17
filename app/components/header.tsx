@@ -9,7 +9,7 @@ interface HeaderProps {
 const HeaderCard = ({ isConnected }: HeaderProps) => {
   return (
     <>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center p-4">
         <h1 className="text-3xl font-bold">Industrial IoT Dashboard</h1>
         <Alert className={`w-fit ${isConnected ? "bg-green-50" : "bg-red-50"}`}>
           <WifiIcon
