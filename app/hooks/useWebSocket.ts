@@ -27,25 +27,23 @@ interface Command {
 
 export const useWebSocket = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
   const [temperature, setTemperature] = useState<Temperature | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
-    // Get the base URL from environment variable
+    // Get the base URL from environment variable with correct domain
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8081";
-
-    // Make sure it's using HTTP/HTTPS
-    const wsBaseUrl = wsUrl
-
-    console.log("Attempting to connect to WebSocket at:", `${wsBaseUrl}/ws`);
+    console.log("WebSocket base URL:", wsUrl);
 
     const client = new Client({
       webSocketFactory: () => {
-        // Create SockJS connection using HTTP/HTTPS URL
-        const socket = new SockJS(`${wsBaseUrl}`);
+        // Add /ws to the URL
+        const sockjsUrl = `${wsUrl}/ws`;
+        console.log("Attempting to connect to:", sockjsUrl);
+        
+        const socket = new SockJS(sockjsUrl);
 
         socket.onclose = (event) => {
           console.log("WebSocket connection closed:", event);
@@ -65,9 +63,45 @@ export const useWebSocket = () => {
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
-      onConnect: () => {
-        console.log("Successfully connected to WebSocket");
+      onConnect: (frame) => {
+        console.log("Successfully connected to WebSocket", frame);
         setIsConnected(true);
+
+        // Move subscriptions here
+        if (clientRef.current) {
+          // Subscribe to device status
+          clientRef.current.subscribe("/topic/device/status", (message) => {
+            try {
+              const status = JSON.parse(message.body);
+              console.log("Received device status:", status);
+              setDeviceStatus(status);
+            } catch (err) {
+              console.error("Error parsing device status:", err);
+            }
+          });
+
+          // Subscribe to connection status
+          clientRef.current.subscribe("/topic/connection/status", (message) => {
+            try {
+              const status = JSON.parse(message.body);
+              console.log("Received connection status:", status);
+              setConnectionStatus(status);
+            } catch (err) {
+              console.error("Error parsing connection status:", err);
+            }
+          });
+
+          // Subscribe to temperature updates
+          clientRef.current.subscribe("/topic/temperature", (message) => {
+            try {
+              const temp = JSON.parse(message.body);
+              console.log("Received temperature:", temp);
+              setTemperature(temp);
+            } catch (err) {
+              console.error("Error parsing temperature:", err);
+            }
+          });
+        }
       },
       onStompError: (frame) => {
         console.error("STOMP protocol error:", frame);
@@ -82,45 +116,6 @@ export const useWebSocket = () => {
         setIsConnected(false);
       },
     });
-
-    // Set up subscriptions when client connects
-    client.onConnect = (frame) => {
-      console.log("Connected to WebSocket:", frame);
-      setIsConnected(true);
-
-      // Subscribe to device status
-      client.subscribe("/topic/device/status", (message) => {
-        try {
-          const status = JSON.parse(message.body);
-          console.log("Received device status:", status);
-          setDeviceStatus(status);
-        } catch (err) {
-          console.error("Error parsing device status:", err);
-        }
-      });
-
-      // Subscribe to connection status
-      client.subscribe("/topic/connection/status", (message) => {
-        try {
-          const status = JSON.parse(message.body);
-          console.log("Received connection status:", status);
-          setConnectionStatus(status);
-        } catch (err) {
-          console.error("Error parsing connection status:", err);
-        }
-      });
-
-      // Subscribe to temperature updates
-      client.subscribe("/topic/temperature", (message) => {
-        try {
-          const temp = JSON.parse(message.body);
-          console.log("Received temperature:", temp);
-          setTemperature(temp);
-        } catch (err) {
-          console.error("Error parsing temperature:", err);
-        }
-      });
-    };
 
     try {
       console.log("Activating WebSocket client...");
@@ -139,35 +134,32 @@ export const useWebSocket = () => {
   }, []);
 
   const sendCommand = (command: Command) => {
-    if (clientRef.current?.connected) {
-      try {
-        console.log("Sending command:", command);
+    if (!clientRef.current) {
+      console.error("WebSocket client not initialized");
+      return;
+    }
 
-        // Stringify the command object
-        const payload = JSON.stringify(command);
-        console.log("Stringified payload:", payload);
+    if (!clientRef.current.connected) {
+      console.error("WebSocket not connected");
+      return;
+    }
 
-        clientRef.current.publish({
-          destination: "/app/device/command",
-          body: payload,
-          headers: {
-            "content-type": "application/json",
-          },
-        });
+    try {
+      console.log("Sending command:", command);
+      const payload = JSON.stringify(command);
+      console.log("Sending to /app/device/command:", payload);
 
-        console.log("Command sent successfully");
-      } catch (error) {
-        console.error("Error sending command:", {
-          error,
-          command,
-          connectionState: clientRef.current.connected,
-        });
-      }
-    } else {
-      console.error("WebSocket not connected", {
-        connectionState: clientRef.current?.connected,
-        client: clientRef.current,
+      clientRef.current.publish({
+        destination: "/app/device/command",
+        body: payload,
+        headers: {
+          "content-type": "application/json",
+        },
       });
+
+      console.log("Command sent successfully");
+    } catch (error) {
+      console.error("Error sending command:", error);
     }
   };
 
