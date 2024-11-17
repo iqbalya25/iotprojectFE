@@ -39,8 +39,6 @@ export const useWebSocket = () => {
 
     // Make sure it's using HTTP/HTTPS
     const wsBaseUrl = wsUrl
-      .replace("ws://", "http://")
-      .replace("wss://", "https://");
 
     console.log("Attempting to connect to WebSocket at:", `${wsBaseUrl}/ws`);
 
