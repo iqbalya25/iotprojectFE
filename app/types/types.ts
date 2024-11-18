@@ -49,17 +49,20 @@ export interface Master {
     masterId: number;
   }
 
-  export interface TemperaturePaginatedResponse {
-    content: TemperatureData[];
+  export interface TemperatureLog {
+    id: number;
+    value1: number;
+    deviceName: string;
+    masterName: string;
+    masterLocation: string;
+    addressName?: string;
+    timestamp: string;
+}
+
+export interface TemperaturePaginatedResponse {
+    content: TemperatureLog[];
     currentPage: number;
     totalItems: number;
     totalPages: number;
     size: number;
-  }
-  
-  export interface TemperatureLog {
-    value: number;
-    timestamp: string;
-    deviceId: string;
-    masterId: number;
-  }
+}
