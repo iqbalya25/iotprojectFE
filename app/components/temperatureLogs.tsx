@@ -43,16 +43,16 @@ const TemperatureLogs = ({
   return (
     <Card className="border-2 border-[#91a6be] bg-white">
       <CardHeader className="border-b border-[#91a6be]">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <CardTitle className="text-sm font-medium text-[#003448]">
             Temperature Logs
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="w-full md:w-auto">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="border-[#91a6be] hover:bg-[#dee2ef]"
+                  className="w-full md:w-auto border-[#91a6be] hover:bg-[#dee2ef]"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4 text-[#91a6be]" />
                   {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
