@@ -22,12 +22,17 @@ export interface Master {
   export interface Temperature {
     value: number;
     timestamp: string;
+    deviceId: string;
+    masterId: number;
   }
 
   export interface TemperatureData {
     value: number;
     timestamp: string;
+    deviceId: string;
+    masterId: number;
   }
+  
   
   export interface TemperatureChartProps {
     data: TemperatureData[];
@@ -39,6 +44,21 @@ export interface Master {
     frequency: number;
     ampere: number;
     voltage: number;
+    timestamp: string;
+    deviceId: string;
+    masterId: number;
+  }
+
+  export interface TemperaturePaginatedResponse {
+    content: TemperatureData[];
+    currentPage: number;
+    totalItems: number;
+    totalPages: number;
+    size: number;
+  }
+  
+  export interface TemperatureLog {
+    value: number;
     timestamp: string;
     deviceId: string;
     masterId: number;

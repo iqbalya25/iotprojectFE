@@ -98,8 +98,8 @@ const DeviceMonitor = () => {
 
         {/* Temperature Graphs */}
         <div className="w-full">
-          <TemperatureGraphs realtimeData={temperature} />
-        </div>
+        <TemperatureGraphs realtimeData={temperature} />
+      </div>
       </div>
     </div>
   );

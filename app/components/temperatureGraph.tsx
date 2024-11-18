@@ -1,57 +1,67 @@
+// components/TemperatureGraphs.tsx
 import { useState, useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { TemperatureData } from "../types/types";
+import { TemperatureData, TemperaturePaginatedResponse, TemperatureLog } from "../types/types";
 import TemperatureChart from "./temperatureChart";
+import TemperatureLogs from "./temperatureLogs";
 
 interface TemperatureGraphsProps {
   realtimeData: TemperatureData | null;
 }
 
 const TemperatureGraphs = ({ realtimeData }: TemperatureGraphsProps) => {
-  const [realtimeChartData, setRealtimeChartData] = useState<TemperatureData[]>(
-    []
-  );
-  const [historicalData, setHistoricalData] = useState<TemperatureData[]>([]);
-  const [timeRange, setTimeRange] = useState("1h");
+  const [realtimeChartData, setRealtimeChartData] = useState<TemperatureData[]>([]);
+  const [logsData, setLogsData] = useState<TemperatureLog[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date>();
 
   // Keep only last 20 points for real-time data
   useEffect(() => {
     if (realtimeData) {
       setRealtimeChartData((prev) => {
         const newData = [...prev, realtimeData];
-        return newData.slice(-20); // Keep only last 20 points
+        return newData.slice(-20);
       });
     }
   }, [realtimeData]);
 
+  // Fetch logs data
   useEffect(() => {
-    const fetchHistoricalData = async () => {
+    const fetchLogs = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const dateParam = selectedDate 
+          ? `&date=${selectedDate.toISOString().split('T')[0]}` 
+          : '';
         const response = await fetch(
-          `${apiUrl}/api/temperature/history?range=${timeRange}`
+          `${apiUrl}/api/temperature/logs?page=${currentPage}${dateParam}&size=10`
         );
+        
         if (response.ok) {
-          const data = await response.json();
-          setHistoricalData(data);
+          const data: TemperaturePaginatedResponse = await response.json();
+          setLogsData(data.content);
+          setTotalPages(data.totalPages);
         }
       } catch (error) {
-        console.error("Error fetching historical data:", error);
+        console.error("Error fetching temperature logs:", error);
       }
     };
 
-    fetchHistoricalData();
-  }, [timeRange]);
+    fetchLogs();
+  }, [currentPage, selectedDate]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    setCurrentPage(0); // Reset to first page when date changes
+  };
 
   return (
     <div className="flex flex-col space-y-6 w-full">
-      {/* Real-time Graph - Full Width */}
+      {/* Real-time Graph */}
       <div className="w-full">
         <TemperatureChart
           data={realtimeChartData}
@@ -60,31 +70,19 @@ const TemperatureGraphs = ({ realtimeData }: TemperatureGraphsProps) => {
         />
       </div>
 
-      {/* Historical Graph Section - Full Width */}
-      <div className="w-full space-y-4">
-        <div className="flex justify-between items-center px-4">
-          <h3 className="text-lg font-medium">Historical Data</h3>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select time range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1h">Last Hour</SelectItem>
-              <SelectItem value="24h">Last 24 Hours</SelectItem>
-              <SelectItem value="7d">Last 7 Days</SelectItem>
-              <SelectItem value="30d">Last 30 Days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <TemperatureChart
-          data={historicalData}
-          title={`Temperature History (${timeRange})`}
-          type="historical"
+      {/* Temperature Logs Table */}
+      <div className="w-full">
+        <TemperatureLogs
+          data={logsData}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onDateChange={handleDateChange}
+          selectedDate={selectedDate}
         />
       </div>
     </div>
   );
 };
-//
 
 export default TemperatureGraphs;

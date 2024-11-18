@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { BlowerParameters } from "../types/types";
+import { BlowerParameters, TemperatureData } from "../types/types";
 
 interface DeviceStatus {
   deviceId: string;
@@ -30,7 +30,7 @@ export const useWebSocket = () => {
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus | null>(null);
-  const [temperature, setTemperature] = useState<Temperature | null>(null);
+    const [temperature, setTemperature] = useState<TemperatureData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [blowerParameters, setBlowerParameters] = useState<BlowerParameters | null>(null);
   const clientRef = useRef<Client | null>(null);
